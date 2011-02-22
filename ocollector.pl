@@ -18,6 +18,7 @@ use Try::Tiny;
 use Ocollector::ServiceMonitor::Memcached;
 use Ocollector::AccountServer::StatisticDetails;
 use Ocollector::AccountServer::Cache;
+use Ocollector::AccountServer::DBComErr;
 use Ocollector::CloudStat::Wrapper;
 use Ocollector::Nginx::ErrorLog;
 

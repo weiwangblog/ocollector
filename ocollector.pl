@@ -18,6 +18,7 @@ use Try::Tiny;
 use Ocollector::ServiceMonitor::Memcached;
 use Ocollector::AccountServer::StatisticDetails;
 use Ocollector::AccountServer::Cache;
+use Ocollector::AccountServer::DBComErr;
 use Ocollector::CloudStat::Wrapper;
 use Ocollector::Nginx::ErrorLog;
 
@@ -27,7 +28,7 @@ use Net::Address::IP::Local;
 use constant WIN32 => $^O eq 'MSWin32';
 use constant SUNOS => $^O eq 'solaris';
 
-our $VERSION = "1.08";
+our $VERSION = "1.09";
 $VERSION = eval $VERSION;
 
 

@@ -370,6 +370,8 @@ sub prepare_metrics {
 
         my ($rc_dynamic, $rc_static)  = parse_http_iis_v1($params->{last_n}, $iis_logfile, $params->{user_given_domain}, $params->{iis_version});
 
+        print Dumper($rc_dynamic, $rc_static);
+
         my $interval = $params->{last_n};
         my $metric_name;
         if ($interval == 60) {
@@ -401,12 +403,12 @@ sub prepare_metrics {
                         if ($item ne 'latency') { # 耗时的算法和其他不同
                             $results .= sprintf("put iis.%s %d %d interval=%s host=%s domain=%s virtualized=%s type=dynamic\n",
                                 $item, time(), $rc_dynamic->{$domain}->{$host}->{$item},
-                                $metric_name, $target, $domain, $params->{virtual});
+                                $metric_name, $host, $domain, $params->{virtual});
                         } else {
                             $results .= sprintf("put iis.%s %d %d interval=%s host=%s domain=%s virtualized=%s type=dynamic\n",
                                 $item, time(),
                                 ($rc_dynamic->{$domain}->{$host}->{$item}/$rc_dynamic->{$domain}->{$host}->{latency_throughput}),
-                                $metric_name, $target, $domain, $params->{virtual});
+                                $metric_name, $host, $domain, $params->{virtual});
                         }
                     }
                 }
@@ -432,12 +434,12 @@ sub prepare_metrics {
                         if ($item ne 'latency') { # 耗时的算法和其他不同
                             $results .= sprintf("put iis.%s %d %d interval=%s host=%s domain=%s virtualized=%s type=static\n",
                                 $item, time(), $rc_static->{$domain}->{$host}->{$item},
-                                $metric_name, $target, $domain, $params->{virtual});
+                                $metric_name, $host, $domain, $params->{virtual});
                         } else {
                             $results .= sprintf("put iis.%s %d %d interval=%s host=%s domain=%s virtualized=%s type=static\n",
                                 $item, time(),
                                 ($rc_static->{$domain}->{$host}->{$item}/$rc_static->{$domain}->{$host}->{latency_throughput}),
-                                $metric_name, $target, $domain, $params->{virtual});
+                                $metric_name, $host, $domain, $params->{virtual});
                         }
                     }
                 }

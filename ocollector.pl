@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # author:        yanglei@snda.com
-# last modified: 2011-02-19
+# last modified: 2011-02-25
 # description:   this script collects interesting data then send to some place for scrunity.
 
 use strict;
@@ -401,12 +401,12 @@ sub prepare_metrics {
                         if ($item ne 'latency') { # 耗时的算法和其他不同
                             $results .= sprintf("put iis.%s %d %d interval=%s host=%s domain=%s virtualized=%s type=dynamic\n",
                                 $item, time(), $rc_dynamic->{$domain}->{$host}->{$item},
-                                $metric_name, $target, $domain, $params->{virtual});
+                                $metric_name, $host, $domain, $params->{virtual});
                         } else {
                             $results .= sprintf("put iis.%s %d %d interval=%s host=%s domain=%s virtualized=%s type=dynamic\n",
                                 $item, time(),
                                 ($rc_dynamic->{$domain}->{$host}->{$item}/$rc_dynamic->{$domain}->{$host}->{latency_throughput}),
-                                $metric_name, $target, $domain, $params->{virtual});
+                                $metric_name, $host, $domain, $params->{virtual});
                         }
                     }
                 }
@@ -432,12 +432,12 @@ sub prepare_metrics {
                         if ($item ne 'latency') { # 耗时的算法和其他不同
                             $results .= sprintf("put iis.%s %d %d interval=%s host=%s domain=%s virtualized=%s type=static\n",
                                 $item, time(), $rc_static->{$domain}->{$host}->{$item},
-                                $metric_name, $target, $domain, $params->{virtual});
+                                $metric_name, $host, $domain, $params->{virtual});
                         } else {
                             $results .= sprintf("put iis.%s %d %d interval=%s host=%s domain=%s virtualized=%s type=static\n",
                                 $item, time(),
                                 ($rc_static->{$domain}->{$host}->{$item}/$rc_static->{$domain}->{$host}->{latency_throughput}),
-                                $metric_name, $target, $domain, $params->{virtual});
+                                $metric_name, $host, $domain, $params->{virtual});
                         }
                     }
                 }

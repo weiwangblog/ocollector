@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # author:        yanglei@snda.com
-# last modified: 2011-02-19
+# last modified: 2011-02-25
 # description:   this script collects interesting data then send to some place for scrunity.
 
 use strict;
@@ -369,8 +369,6 @@ sub prepare_metrics {
         return '' unless $iis_logfile;
 
         my ($rc_dynamic, $rc_static)  = parse_http_iis_v1($params->{last_n}, $iis_logfile, $params->{user_given_domain}, $params->{iis_version});
-
-        print Dumper($rc_dynamic, $rc_static);
 
         my $interval = $params->{last_n};
         my $metric_name;

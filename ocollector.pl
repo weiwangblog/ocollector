@@ -21,6 +21,7 @@ use Ocollector::AccountServer::Cache;
 use Ocollector::AccountServer::DBComErr;
 use Ocollector::CloudStat::Wrapper;
 use Ocollector::Nginx::ErrorLog;
+use Ocollector::Tcpbasic::Windows;
 
 # Hacked oneline to remove dependency on version module, which requires a XS file that we can't pack.
 use Net::Address::IP::Local;
@@ -28,7 +29,11 @@ use Net::Address::IP::Local;
 use constant WIN32 => $^O eq 'MSWin32';
 use constant SUNOS => $^O eq 'solaris';
 
+<<<<<<< HEAD
 our $VERSION = "1.09";
+=======
+our $VERSION = "1.07";
+>>>>>>> feature/win_tcpbasic
 $VERSION = eval $VERSION;
 
 

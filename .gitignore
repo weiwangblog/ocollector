@@ -4,6 +4,7 @@ release-ocollector.exe*
 ocollector.perlapp
 a.pl
 b.txt
+c.txt
 win32lib
 gnuplot-graph.png
 *.log

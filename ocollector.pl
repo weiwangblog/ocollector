@@ -19,8 +19,10 @@ use Ocollector::ServiceMonitor::Memcached;
 use Ocollector::AccountServer::StatisticDetails;
 use Ocollector::AccountServer::Cache;
 use Ocollector::AccountServer::DBComErr;
+use Ocollector::AccountServer::AC;
 use Ocollector::CloudStat::Wrapper;
 use Ocollector::Nginx::ErrorLog;
+use Ocollector::IIS::Error2;
 use Ocollector::Tcpbasic::Windows;
 
 # Hacked oneline to remove dependency on version module, which requires a XS file that we can't pack.

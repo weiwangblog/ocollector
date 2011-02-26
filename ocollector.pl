@@ -50,9 +50,10 @@ my $re_static_err = qr/(?:5\d{2}|404)/ixsm;
 my $re_dynamic_err = qr/(?:5\d{2})/ixsm;
 my $re_static = qr/\.(?:gif|png|jpg|jpeg|js|css|swf)/ixsm;
 my $re_iis_logfile = qr/^ex\d{6}\.log$/ixsm;
+my $re_ipv4_iis_xff = qr/$re_ipv4,?(?:\+$re_ipv4,?)+?/ixsm;
 
 # damn it, the position is not same between iis5 and iis6
-my $re_iis6 = qr/^($re_iis_time) \s ($re_ipv4) \s (?:\w+) \s ($re_uri) \s (?:$re_qstring) \s ($re_ipv4) \s ($re_status) \s ($re_cost)/ixsm;
+my $re_iis6 = qr/^($re_iis_time) \s ($re_ipv4) \s (?:\w+) \s ($re_uri) \s (?:$re_qstring) \s ($re_ipv4_iis_xff) \s ($re_status) \s ($re_cost)/ixsm;
 my $re_iis5 = qr/^($re_iis_time) \s ($re_ipv4) \s ($re_ipv4) \s (?:\w+) \s ($re_uri) \s (?:$re_qstring) \s ($re_status) \s ($re_cost)/ixsm;
 
 

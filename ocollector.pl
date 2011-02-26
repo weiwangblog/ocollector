@@ -39,6 +39,7 @@ my $O_ERROR     = '';
 # Those regular expressions are stoled from Regex::Common
 # but zero-dependency is more important for us.
 my $re_ipv4 = qr/(?:(?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}))/ixsm;
+my $re_ipv4_iis_xff = qr/($re_ipv4)(?:\,?\+$re_ipv4\,?)*/ixsm;
 my $re_domain = qr/(?:[0-9A-Za-z](?:(?:[-A-Za-z0-9]){0,61}[A-Za-z0-9])?(?:\.[A-Za-z](?:(?:[-A-Za-z0-9]){0,61}[A-Za-z0-9])?)*)/ixsm;
 my $re_uri = qr/[^ ]+/ixsm;
 my $re_qstring = qr/(?:[^ ]+|-)/ixsm;
@@ -52,7 +53,7 @@ my $re_static = qr/\.(?:gif|png|jpg|jpeg|js|css|swf)/ixsm;
 my $re_iis_logfile = qr/^ex\d{6}\.log$/ixsm;
 
 # damn it, the position is not same between iis5 and iis6
-my $re_iis6 = qr/^($re_iis_time) \s ($re_ipv4) \s (?:\w+) \s ($re_uri) \s (?:$re_qstring) \s ($re_ipv4) \s ($re_status) \s ($re_cost)/ixsm;
+my $re_iis6 = qr/^($re_iis_time) \s ($re_ipv4) \s (?:\w+) \s ($re_uri) \s (?:$re_qstring) \s $re_ipv4_iis_xff \s ($re_status) \s ($re_cost)/ixsm;
 my $re_iis5 = qr/^($re_iis_time) \s ($re_ipv4) \s ($re_ipv4) \s (?:\w+) \s ($re_uri) \s (?:$re_qstring) \s ($re_status) \s ($re_cost)/ixsm;
 
 

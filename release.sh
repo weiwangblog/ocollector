@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# call make.pl to backup lib here from system lib
+echo 'backup system lib...'
+perl make.pl
+
+echo 'check pre-requsite...'
 if [[ ! -e $1 ]] ; then
     echo 'which script you want to pack?'
     exit 1
@@ -11,6 +16,7 @@ if [[ $? != 0 ]] ; then
     exit 1
 fi
 
+echo 'build application...'
 rm -rf release
 mkdir -p release/lib
 cp $1 release

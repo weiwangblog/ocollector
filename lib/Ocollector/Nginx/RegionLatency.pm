@@ -44,12 +44,14 @@ sub show_results {
     my $tag_partial = $self->tag_partial;
 
     my $script = $self->script;
+    my $s = time;
     my $rc = `$script`;
+    my $cost = time - $s;
     if ($rc) {
         foreach (split /\n/, $rc) {
             chomp;
             my ($vendor, $region, $counts) = split /\t/;
-            $results .= sprintf("put nginx.regionlatency %d %d vendor=%s region=%s %s\n",
+            $results .= sprintf("put nginx.regioncount %d %d vendor=%s region=%s %s\n",
                 time, $counts, $vendor, $region, $tag_partial);
         }
     }

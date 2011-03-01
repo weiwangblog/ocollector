@@ -1,4 +1,8 @@
 #!/usr/bin/env perl
+# author:        yanglei@snda.com
+# last modified: 2011-03-01
+# description:   this script parse CDN's ip to region table and import the results into memcached.
+
 use strict;
 use warnings;
 use Data::Dumper;

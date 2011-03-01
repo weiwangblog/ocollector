@@ -22,6 +22,7 @@ use Ocollector::AccountServer::DBComErr;
 use Ocollector::AccountServer::AC;
 use Ocollector::CloudStat::Wrapper;
 use Ocollector::Nginx::ErrorLog;
+use Ocollector::Nginx::RegionLatency;
 use Ocollector::IIS::Error2;
 use Ocollector::Tcpbasic::Windows;
 

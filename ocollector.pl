@@ -22,6 +22,7 @@ use Ocollector::AccountServer::DBComErr;
 use Ocollector::AccountServer::AC;
 use Ocollector::CloudStat::Wrapper;
 use Ocollector::Nginx::ErrorLog;
+use Ocollector::Nginx::RegionLatency;
 use Ocollector::IIS::Error2;
 use Ocollector::Tcpbasic::Windows;
 
@@ -195,7 +196,7 @@ sub parse_http_nginx_v2 {
         while (defined (my $line = $bw->readline)) {
             chomp $line;
 
-            if ($line =~ /^($re_msec) \s+ ($re_domain|$re_ipv4) \s+ ($re_uri) \s+ ($re_status) \s+ ($re_ipv4:\d+|-) \s+ ($re_cost|-)/ixsm) {
+            if ($line =~ /^($re_msec) \s+ ($re_domain|$re_ipv4) \s+ ($re_uri) \s+ ($re_status) \s+ ($re_ipv4:\d+|-) \s+ .* ($re_cost|-)$/ixsm) {
                 my ($msec, $domain, $uri, $status, $upstream, $cost) = ($1, $2, $3, $4, $5, $6);
 
                 if ($msec < $stop) {

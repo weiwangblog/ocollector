@@ -37,12 +37,13 @@ $VERSION = eval $VERSION;
 
 
 # GLOBALS
-my $O_ERROR     = '';
+my $O_ERROR = q{};
 
 # Those regular expressions are stoled from Regex::Common
 # but zero-dependency is more important for us.
 my $re_ipv4 = qr/(?:(?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}))/ixsm;
 my $re_ipv4_iis_xff = qr/($re_ipv4)(?:\,?\+$re_ipv4\,?)*/ixsm;
+my $re_ipv4_nginx_xff = qr/(?:$re_ipv4)(?: \,? \s+ $re_ipv4)*/ixsm;
 my $re_domain = qr/(?:[0-9A-Za-z](?:(?:[-A-Za-z0-9]){0,61}[A-Za-z0-9])?(?:\.[A-Za-z](?:(?:[-A-Za-z0-9]){0,61}[A-Za-z0-9])?)*)/ixsm;
 my $re_uri = qr/[^ ]+/ixsm;
 my $re_qstring = qr/(?:[^ ]+|-)/ixsm;
@@ -196,7 +197,7 @@ sub parse_http_nginx_v2 {
         while (defined (my $line = $bw->readline)) {
             chomp $line;
 
-            if ($line =~ /^($re_msec) \s+ ($re_domain|$re_ipv4) \s+ ($re_uri) \s+ ($re_status) \s+ ($re_ipv4:\d+|-) \s+ .* ($re_cost|-)$/ixsm) {
+            if ($line =~ /^($re_msec) \s+ ($re_domain|$re_ipv4) \s+ ($re_uri) \s+ ($re_status) \s+ ($re_ipv4:\d+|-) \s+ $re_ipv4_nginx_xff \s+ ($re_cost|-)$/ixsm) {
                 my ($msec, $domain, $uri, $status, $upstream, $cost) = ($1, $2, $3, $4, $5, $6);
 
                 if ($msec < $stop) {

@@ -25,6 +25,7 @@ use Ocollector::Nginx::ErrorLog;
 use Ocollector::Nginx::RegionLatency;
 use Ocollector::IIS::Error2;
 use Ocollector::Tcpbasic::Windows;
+use Ocollector::NetAppliance::Cisco::Switch;
 
 # Hacked oneline to remove dependency on version module, which requires a XS file that we can't pack.
 use Net::Address::IP::Local;

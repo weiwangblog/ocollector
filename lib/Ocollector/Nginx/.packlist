@@ -1,2 +1,3 @@
 /usr/lib/perl5/site_perl/5.8.8/Ocollector/Nginx/ErrorLog.pm
+/usr/lib/perl5/site_perl/5.8.8/Ocollector/Nginx/SLA.pm
 /usr/lib/perl5/site_perl/5.8.8/Ocollector/Nginx/RegionLatency.pm

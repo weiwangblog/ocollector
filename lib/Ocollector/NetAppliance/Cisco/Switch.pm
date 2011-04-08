@@ -6,7 +6,7 @@ use Date::Parse;
 use Data::Dumper;
 use File::Spec;
 
-my @accessors = qw( metric logdir logfile interval errormsg tag_partial debug );
+my @accessors = qw( metric logdir logfile interval errormsg tag_partial debug tzdiff );
 
 use base qw(Class::Accessor Ocollector::Common);
 Ocollector::NetAppliance::Cisco::Switch->mk_accessors(@accessors);
@@ -25,6 +25,7 @@ sub new {
     $self->{logdir}    = q{C:\Program Files (x86)\Cisco Systems\dcm\fm\logs};
     $self->{logfile}   = 'NH-MDS-1_summarylog.txt,NH-MDS-2_summarylog.txt';
     $self->{metric}    = 'NetAppliance.Cisco.Switch';
+    $self->{tzdiff}    = 0;
     $self->{interval}  = 10;
     $self->{errormsg}  = '';
     $self->{debug}     = '';
@@ -54,7 +55,14 @@ sub do_parse {
     my $timefrm = $self->interval;
     my ($logfile) = @_;
 
+
     my $stop = time() - $timefrm;
+
+    # if the timezone is provided, adjust stop value from the current timezone 
+    # for example, if we are in +8 and the log is written in -12, timezone should be set to 20
+    if ($self->tzdiff != 0) {
+        $stop -= $self->tzdiff * 3600;
+    }
 
     my $rc;
     my $bw = File::ReadBackwards->new($logfile);
@@ -106,8 +114,17 @@ sub show_results {
             my $errors    = $rc->{$interface}->{errors};
             my $discards  = $rc->{$interface}->{discards};
 
-            $results .= sprintf("put %s %d interface=%s rx=%.0f tx=%.0f errors=%.0f discards=%.0f %s\n",
-                $self->metric, time(), $interface, $rx, $tx, $errors, $discards, $self->tag_partial);
+            $results .= sprintf("put %s.rx %d %.0f interface=%s %s\n",
+                $self->metric, time(), $rx, $interface, $self->tag_partial);
+
+            $results .= sprintf("put %s.tx %d %.0f interface=%s %s\n",
+                $self->metric, time(), $tx, $interface, $self->tag_partial);
+
+            $results .= sprintf("put %s.error %d %.0f interface=%s %s\n",
+                $self->metric, time(), $errors, $interface, $self->tag_partial);
+
+            $results .= sprintf("put %s.discard %d %.0f interface=%s %s\n",
+                $self->metric, time(), $discards, $interface, $self->tag_partial);
         }
 
         if ($self->debug) {

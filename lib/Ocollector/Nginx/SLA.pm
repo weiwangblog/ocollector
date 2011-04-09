@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 use Sys::Statistics::Linux::DiskUsage;
 
-my @accessors = qw(metric logfile interval errormsg prefer cluster threshold myself virtual);
+my @accessors = qw(metric logfile interval errormsg prefer cluster threshold myself virtual tag_partial);
 
 use base qw(Class::Accessor Ocollector::Common);
 Ocollector::Nginx::SLA->mk_accessors(@accessors);
@@ -57,7 +57,7 @@ sub new {
     }
 
     my @tags;
-    if ($self->{prefer} =~ /hostname/ixsm) {
+    if ($self->{prefer} eq 'hostname') {
         push @tags, 'host=' . hostname;
     } else {
         push @tags, 'host=' . $self->{myself};
@@ -193,36 +193,36 @@ sub show_results {
                 foreach my $item (keys %{$rc_dynamic->{$domain}->{$upstream}}) {
                     # process latency here
                     if ($item eq 'latency') {
-                        $results .= sprintf("put nginx.latency %d %d host=%s domain=%s upstream=%s virtualized=%s cluster=%s type=dynamic\n",
+                        $results .= sprintf("put nginx.latency %d %d domain=%s upstream=%s virtualized=%s cluster=%s %s type=dynamic\n",
                             time(),
                             ($rc_dynamic->{$domain}->{$upstream}->{latency}/$rc_dynamic->{$domain}->{$upstream}->{throughput})*1000,
-                            $self->myself,
                             $domain,
                             $upstream,
                             $self->virtual,
                             $self->cluster,
+                            $self->tag_partial,
                         );
                     } elsif ($item eq 'throughput') {
-                        $results .= sprintf("put nginx.throughput %d %d host=%s domain=%s upstream=%s virtualized=%s cluster=%s type=dynamic\n",
+                        $results .= sprintf("put nginx.throughput %d %d domain=%s upstream=%s virtualized=%s cluster=%s %s type=dynamic\n",
                             time(),
                             $rc_dynamic->{$domain}->{$upstream}->{throughput},
-                            $self->myself,
                             $domain,
                             $upstream,
                             $self->virtual,
                             $self->cluster,
+                            $self->tag_partial,
                         );
                     } elsif ($item eq 'error') {
                         foreach my $err (keys %{$rc_dynamic->{$domain}->{$upstream}->{error}}) {
-                            $results .= sprintf("put nginx.error %d %d host=%s domain=%s upstream=%s virtualized=%s cluster=%s code=%s type=dynamic\n",
+                            $results .= sprintf("put nginx.error %d %d domain=%s upstream=%s virtualized=%s cluster=%s code=%s %s type=dynamic\n",
                                 time(),
                                 $rc_dynamic->{$domain}->{$upstream}->{error}->{$err},
-                                $self->myself,
                                 $domain,
                                 $upstream,
                                 $self->virtual,
                                 $self->cluster,
                                 $err,
+                                $self->tag_partial,
                             );
                         }
                     } else {
@@ -247,36 +247,36 @@ sub show_results {
                 foreach my $item (keys %{$rc_static->{$domain}->{$upstream}}) {
                     # process latency here
                     if ($item eq 'latency') {
-                        $results .= sprintf("put nginx.latency %d %d host=%s domain=%s upstream=%s virtualized=%s cluster=%s type=static\n",
+                        $results .= sprintf("put nginx.latency %d %d domain=%s upstream=%s virtualized=%s cluster=%s %s type=static\n",
                             time(),
                             ($rc_static->{$domain}->{$upstream}->{latency}/$rc_static->{$domain}->{$upstream}->{throughput})*1000,
-                            $self->myself,
                             $domain,
                             $upstream,
                             $self->virtual,
                             $self->cluster,
+                            $self->tag_partial,
                         );
                     } elsif ($item eq 'throughput') {
-                        $results .= sprintf("put nginx.throughput %d %d host=%s domain=%s upstream=%s virtualized=%s cluster=%s type=static\n",
+                        $results .= sprintf("put nginx.throughput %d %d domain=%s upstream=%s virtualized=%s cluster=%s %s type=static\n",
                             time(),
                             $rc_static->{$domain}->{$upstream}->{throughput},
-                            $self->myself,
                             $domain,
                             $upstream,
                             $self->virtual,
                             $self->cluster,
+                            $self->tag_partial,
                         );
                     } elsif ($item eq 'error') {
                         foreach my $err (keys %{$rc_static->{$domain}->{$upstream}->{error}}) {
-                            $results .= sprintf("put nginx.error %d %d host=%s domain=%s upstream=%s virtualized=%s cluster=%s code=%s type=static\n",
+                            $results .= sprintf("put nginx.error %d %d domain=%s upstream=%s virtualized=%s cluster=%s code=%s %s type=static\n",
                                 time(),
                                 $rc_static->{$domain}->{$upstream}->{error}->{$err},
-                                $self->myself,
                                 $domain,
                                 $upstream,
                                 $self->virtual,
                                 $self->cluster,
                                 $err,
+                                $self->tag_partial,
                             );
                         }
                     } else {

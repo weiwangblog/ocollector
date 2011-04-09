@@ -146,12 +146,11 @@ sub main {
 
     usage(2) if $help;
 
+    # plugin is a perl class
     my $supported = '(?:\w+::\w+)';
 
     if ($ocollector_type !~ /^(?:$supported)/ixsm) {
         croak "[$ocollector_type] is not a supported collecting type\n";
-    } else {
-        1;
     }
 
     # build params hash for each collector type

@@ -9,7 +9,7 @@ use Carp;
 use Sys::Hostname;
 use Sys::Statistics::Linux::DiskUsage;
 
-my @accessors = qw(metric logfile interval errormsg prefer cluster threshold myself virtual tag_partial);
+my @accessors = qw(metric logfile interval errormsg prefer cluster threshold myself virtual tag_partial percentile);
 
 use base qw(Class::Accessor Ocollector::Common);
 Ocollector::Nginx::SLA->mk_accessors(@accessors);
@@ -42,6 +42,7 @@ sub new {
     $self->{threshold}  = 90;
     $self->{errormsg}   = '';
     $self->{virtual}    = 'no';
+    $self->{percentile} = 0.05;
     $self->{myself}     = Net::Address::IP::Local->public_ipv4;
     
 
@@ -127,7 +128,10 @@ sub do_parse {
                                 $rc_dynamic->{$domain}->{$upstream}->{error}->{$1}++;
                             }
 
+                            # platency is an arrayref which holds all request's latency
                             $rc_dynamic->{$domain}->{$upstream}->{latency} += $cost;
+                            push @{$rc_dynamic->{$domain}->{$upstream}->{platency}}, $cost;
+
                             $rc_dynamic->{$domain}->{$upstream}->{throughput}++;
                         }
                         else {
@@ -150,6 +154,8 @@ sub do_parse {
                             }
 
                             $rc_static->{$domain}->{$upstream}->{latency} += $cost;
+                            push @{$rc_static->{$domain}->{$upstream}->{platency}}, $cost;
+
                             $rc_static->{$domain}->{$upstream}->{throughput}++;
                         }
                     }
@@ -190,6 +196,7 @@ sub show_results {
                     $errors = 0;
                 }
 
+                METRIC_HANDLING:
                 foreach my $item (keys %{$rc_dynamic->{$domain}->{$upstream}}) {
                     # process latency here
                     if ($item eq 'latency') {
@@ -225,6 +232,20 @@ sub show_results {
                                 $self->tag_partial,
                             );
                         }
+                    } elsif ($item eq 'platency') {
+                        my $platency = $self->compute_platency($rc_dynamic->{$domain}->{$upstream}->{platency}, $rc_dynamic->{$domain}->{$upstream}->{throughput});
+
+                        next METRIC_HANDLING unless $platency;
+
+                        $results .= sprintf("put nginx.platency %d %d domain=%s upstream=%s virtualized=%s cluster=%s %s type=dynamic\n",
+                            time(),
+                            $platency,
+                            $domain,
+                            $upstream,
+                            $self->virtual,
+                            $self->cluster,
+                            $self->tag_partial,
+                        );
                     } else {
                         # impossible
                         1;
@@ -316,6 +337,54 @@ sub flush_tmpfs {
     }
 
     return 0;
+}
+
+# This function computes the percentile latency(platency). The goal is to exclude anomalies so as to give
+# a better average. Otherwise, the arithmetic average is inaccurate when very high or low latency requests present.
+# The actual implementation will subject to change where the goal is determined.
+sub compute_platency {
+    my $self = shift;
+    my ($platency, $throughput) = @_;
+
+    my $result;
+
+    # It's a trivial case when throughput equals one
+    if ($throughput == 1) {
+        $result = shift @{$platency};
+        return $result;
+    }
+
+    # The percentile is implemented as throw away 1/2 requests of total requests
+    # from the beginning and the end. So the current implementation is simlar to the scoring rules of diving.
+    my $throw_reqs = int(($self->percentile / 2) * $throughput);
+
+    # Of course, we should sort
+    my @sorted_platency = sort { $a <=> $b } @{$platency};
+
+    # throw away X requests from the beginning, they are the ones with lower latency
+    my @spliced_sorted_platency = splice(@sorted_platency, $throw_reqs);
+
+    # throw away X requests from the end, they are the ones with higher latency
+    @spliced_sorted_platency = splice(@spliced_sorted_platency, 0, $#spliced_sorted_platency-$throw_reqs);
+
+    # now we can compute percentile latency
+    my ($total_latency, $total_reqs);
+    foreach my $latency (@spliced_sorted_platency) {
+        $total_latency += $latency;
+        $total_reqs++;
+    }
+
+    if ($total_latency && $total_reqs) {
+        $result = $total_latency / $total_reqs * 1000;
+    } else {
+        # debug empty total_latency or total_reqs here
+        1;
+
+        # print STDERR sprintf("throughput: %d total_latency: %d total_reqs: %d throw_reqs: %d left_reqs: %d\n",
+        #         $throughput, $total_latency, $total_reqs, $throw_reqs, $#spliced_sorted_platency - $throw_reqs);
+    }
+
+    return $result;
 }
 
 1;

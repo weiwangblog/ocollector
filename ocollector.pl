@@ -1,6 +1,6 @@
 #!/usr/bin/env perl
 # author:        yanglei@snda.com
-# last modified: 2011-04-08
+# last modified: 2011-04-12
 # description:   this script collects interesting data then send to some place for scrunity.
 
 use strict;
@@ -30,7 +30,7 @@ use Ocollector::Tcpbasic::Windows;
 use Ocollector::NetAppliance::Cisco::Switch;
 
 # Hacked oneline to remove dependency on version module, which requires a XS file that we can't pack.
-our $VERSION = "1.14";
+our $VERSION = "1.15";
 $VERSION = eval $VERSION;
 
 my $O_ERROR = q{};

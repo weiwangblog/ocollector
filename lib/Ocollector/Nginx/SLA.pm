@@ -8,6 +8,7 @@ use File::Spec;
 use Carp;
 use Sys::Hostname;
 use Sys::Statistics::Linux::DiskUsage;
+use List::Util qw( shuffle );
 
 my @accessors = qw(metric logfile interval errormsg prefer cluster threshold myself virtual tag_partial percentile);
 
@@ -233,8 +234,27 @@ sub show_results {
                             );
                         }
                     } elsif ($item eq 'platency') {
-                        my $platency = $self->compute_platency($rc_dynamic->{$domain}->{$upstream}->{platency}, $rc_dynamic->{$domain}->{$upstream}->{throughput});
+                        # FIXME Don't do rlatency in the platency logic, should rename platency whatsoever
+                        my $rlatency = $self->compute_rlatency(
+                            $rc_dynamic->{$domain}->{$upstream}->{platency},
+                            $rc_dynamic->{$domain}->{$upstream}->{throughput}
+                        );
+                        next METRIC_HANDLING unless $rlatency;
 
+                        $results .= sprintf("put nginx.rlatency %d %d domain=%s upstream=%s virtualized=%s cluster=%s %s type=dynamic\n",
+                            time(),
+                            $rlatency,
+                            $domain,
+                            $upstream,
+                            $self->virtual,
+                            $self->cluster,
+                            $self->tag_partial,
+                        );
+
+                        my $platency = $self->compute_platency(
+                            $rc_dynamic->{$domain}->{$upstream}->{platency},
+                            $rc_dynamic->{$domain}->{$upstream}->{throughput}
+                        );
                         next METRIC_HANDLING unless $platency;
 
                         $results .= sprintf("put nginx.platency %d %d domain=%s upstream=%s virtualized=%s cluster=%s %s type=dynamic\n",
@@ -337,6 +357,44 @@ sub flush_tmpfs {
     }
 
     return 0;
+}
+
+sub compute_rlatency {
+    my $self = shift;
+    my ($rlatency, $throughput) = @_;
+
+    my $result;
+
+    # It's a trivial case when throughput equals one
+    if ($throughput == 1) {
+        $result = shift @{$rlatency};
+        return $result;
+    }
+
+    # randomize the latency array because extreme high latency reqs tend to be appear together
+    my @shuffled_latency = shuffle @{$rlatency};
+
+    # then throw away X percentile requests
+    my $throw_reqs = $self->percentile * $throughput;
+    my @spliced_shuffled_latency = splice(@shuffled_latency, $throw_reqs);
+
+    my ($total_latency, $total_reqs);
+    foreach my $latency (@spliced_shuffled_latency) {
+        $total_latency += $latency;
+        $total_reqs++;
+    }
+
+    if ($total_latency && $total_reqs) {
+        $result = $total_latency / $total_reqs * 1000;
+    } else {
+        # debug empty total_latency or total_reqs here
+        1;
+
+        # print STDERR sprintf("throughput: %d total_latency: %d total_reqs: %d throw_reqs: %d left_reqs: %d\n",
+        #         $throughput, $total_latency, $total_reqs, $throw_reqs, $#spliced_sorted_platency - $throw_reqs);
+    }
+
+    return $result;
 }
 
 # This function computes the percentile latency(platency). The goal is to exclude anomalies so as to give

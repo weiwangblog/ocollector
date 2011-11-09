@@ -14,11 +14,13 @@ my @accessors = qw(metric logfile interval errormsg prefer cluster threshold mys
 use base qw(Class::Accessor Ocollector::Common);
 Ocollector::Nginx::SLA->mk_accessors(@accessors);
 
-our $VERSION = '1.0';
+our $VERSION = '1.1';
 
 my $re_ipv4 = qr/(?:(?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2})[.](?:25[0-5]|2[0-4][0-9]|[0-1]?[0-9]{1,2}))/ixsm;
 my $re_ipv4_nginx_xff = qr/(?:$re_ipv4)(?: \,? \s+ $re_ipv4)*/ixsm;
-my $re_static = qr/\.(?:gif|png|jpg|jpeg|js|css|swf)/ixsm;
+my $re_static_simple = qr/^\/[^?]*?\.(?:gif|png|jpg|jpeg|js|css|swf)$/ixsm; # no parameter
+my $re_static_complex = qr/^\/[^?]*?\.(?:gif|png|jpg|jpeg|js|css|swf)[?]/ixsm; # has parameter
+my $re_static = qr/$re_static_simple|$re_static_complex/ixsm;
 my $re_domain = qr/(?:[0-9A-Za-z](?:(?:[-A-Za-z0-9]){0,61}[A-Za-z0-9])?(?:\.[A-Za-z](?:(?:[-A-Za-z0-9]){0,61}[A-Za-z0-9])?)*)/ixsm;
 my $re_uri = qr/[^ ]+/ixsm;
 my $re_qstring = qr/(?:[^ ]+|-)/ixsm;
